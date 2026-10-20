@@ -131,8 +131,10 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 9,
   },
+
+  // sebelumnya warna buttonnya pink muda
   detailButton: {
-    backgroundColor: '#D96F8C',
+    backgroundColor: '#ba1745', 
     borderRadius: 10,
     alignItems: 'center',
     paddingVertical: 10,

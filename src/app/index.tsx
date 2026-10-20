@@ -1,284 +1,358 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Image,
   TextInput,
+  Image,
   ScrollView,
   Pressable,
-  Alert,
+  StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { styles } from './BloomifyStyles';
+import { router } from 'expo-router';
+import { flowers, formatRupiah } from '../data/flowers';
+import { useShop } from '../context/ShopContext';
 
-// Tipe data produk bunga
-interface Flower {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  description: string;
-  image: string;
-}
+const categories = ['Semua', 'Mawar', 'Sunflower', 'Pink', 'Putih'];
 
-// Daftar produk (Array of Objects)
-const flowers: Flower[] = [
-  {
-    id: 1,
-    name: 'Rose Bouquet',
-    category: 'Mawar',
-    price: 150000,
-    description: 'Buket mawar romantis',
-    image:
-      'https://images.unsplash.com/photo-1494972308805-463bc619d34e?w=600',
-  },
-  {
-    id: 2,
-    name: 'Sunflower Bouquet',
-    category: 'Sunflower',
-    price: 120000,
-    description: 'Buket bunga ceria',
-    image:
-      'https://images.unsplash.com/photo-1597848212624-e6c2c2f0b3f5?w=600',
-  },
-  {
-    id: 3,
-    name: "Baby's Breath",
-    category: 'Baby Breath',
-    price: 100000,
-    description: 'Buket minimalis dan elegan',
-    image:
-      'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=600',
-  },
-  {
-    id: 4,
-    name: 'Tulip Bouquet',
-    category: 'Tulip',
-    price: 135000,
-    description: 'Buket tulip yang anggun',
-    image:
-      'https://images.unsplash.com/photo-1520763185298-1b434c919102?w=600',
-  },
-  {
-    id: 5,
-    name: 'Lavender Bouquet',
-    category: 'Lainnya',
-    price: 110000,
-    description: 'Buket bunga menenangkan',
-    image:
-      'https://images.unsplash.com/photo-1499002238440-d264edd596ec?w=600',
-  },
-  {
-    id: 6,
-    name: 'Mixed Bouquet',
-    category: 'Lainnya',
-    price: 145000,
-    description: 'Kombinasi bunga pilihan',
-    image:
-      'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=600',
-  },
-];
-
-const categories = [
-  'Semua',
-  'Mawar',
-  'Tulip',
-  'Sunflower',
-  'Baby Breath',
-  'Lainnya',
-];
-
-// Custom function untuk membuat kartu produk
-function ProductCard({ item }: { item: Flower }) {
-  return (
-    <Pressable
-      style={styles.card}
-      onPress={() =>
-        Alert.alert(
-          item.name,
-          `${item.description}\nHarga: Rp ${item.price.toLocaleString('id-ID')}`,
-          [
-            { text: 'Tutup', style: 'cancel' },
-            {
-              text: 'Pilih Bunga',
-              onPress: () =>
-                Alert.alert(
-                  'Bloomify',
-                  `${item.name} berhasil dipilih!`
-                ),
-            },
-          ]
-        )
-      }
-    >
-      <Image
-        source={{ uri: item.image }}
-        style={styles.productImage}
-        resizeMode="cover"
-      />
-
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.name}</Text>
-
-        <Text style={styles.productDescription}>
-          {item.description}
-        </Text>
-
-        <Text style={styles.price}>
-          Rp {item.price.toLocaleString('id-ID')}
-        </Text>
-
-        <View style={styles.detailButton}>
-          <Text style={styles.detailButtonText}>
-            Lihat Detail
-          </Text>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
-
-export default function BloomifyHome() {
-  const [selectedCategory, setSelectedCategory] =
-    useState('Semua');
-
+export default function HomeScreen() {
+  //useState input pencarian dan kategori aktif.
   const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('Semua');
 
-  // Filter produk berdasarkan kategori dan pencarian
+  const { favorites, toggleFavorite, cart } = useShop();
+
+  //useEffect berjalan saat nilai pencarian/kategori berubah.
+  useEffect(() => {
+    console.log('Pencarian:', search);
+    console.log('Kategori aktif:', category);
+  }, [search, category]);
+
   const filteredFlowers = flowers.filter((flower) => {
-    const matchCategory =
-      selectedCategory === 'Semua' ||
-      flower.category === selectedCategory;
-
     const matchSearch = flower.name
       .toLowerCase()
       .includes(search.toLowerCase());
 
-    return matchCategory && matchSearch;
+    const matchCategory =
+      category === 'Semua' || flower.category === category;
+
+    return matchSearch && matchCategory;
   });
 
   return (
-    <ScrollView
-      style={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.logo}>✿ Bloomify</Text>
-          <Text style={styles.subtitle}>
-            Flowers & Bouquet
-          </Text>
+          <Text style={styles.logo}>Bloomify 🌷</Text>
+          <Text style={styles.subtitle}>Flowers for every moment</Text>
         </View>
 
-        <Ionicons
-          name="flower-outline"
-          size={30}
-          color="#D96F8C"
-        />
+        <Pressable
+          style={styles.topButton}
+          onPress={() => router.push('/cart')}
+        >
+          <Text style={styles.topButtonText}>🛒 {cart.length}</Text>
+        </Pressable>
       </View>
 
-      {/* Hero section */}
       <View style={styles.hero}>
-        <Text style={styles.greeting}>
-          Halo, Bloomy! 🌷
-        </Text>
-
-        <Text style={styles.description}>
-          Temukan bunga terbaik untuk setiap momen
-          spesialmu di Bloomify. Buket cantik, kualitas
-          terbaik, selalu untukmu.
+        <Text style={styles.heroTitle}>Bunga indah,</Text>
+        <Text style={styles.heroTitle}>untuk cerita indahmu.</Text>
+        <Text style={styles.heroText}>
+          Temukan buket favoritmu di Bloomify.
         </Text>
       </View>
 
-      {/* Kolom pencarian */}
-      <View style={styles.searchBox}>
-        <Ionicons
-          name="search-outline"
-          size={21}
-          color="#D96F8C"
-        />
+      <TextInput
+        style={styles.search}
+        placeholder="Cari buket bunga..."
+        placeholderTextColor="#A98A99"
+        value={search}
+        onChangeText={setSearch}
+      />
 
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Cari bunga atau buket..."
-          placeholderTextColor="#B49AA3"
-          value={search}
-          onChangeText={setSearch}
-        />
+      <View style={styles.quickLinks}>
+        <Pressable
+          style={styles.quickButton}
+          onPress={() => router.push('/favorites')}
+        >
+          <Text style={styles.quickText}>
+            ♡ Favorit ({favorites.length})
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={styles.quickButton}
+          onPress={() => router.push('/cart')}
+        >
+          <Text style={styles.quickText}>🛒 Keranjang</Text>
+        </Pressable>
       </View>
 
-      {/* Kategori bunga */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          Kategori Bunga
-        </Text>
-      </View>
+      <Text style={styles.sectionTitle}>Kategori</Text>
 
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categories}
+        style={styles.categoryList}
       >
-        {categories.map((category) => (
+        {categories.map((item) => (
           <Pressable
-            key={category}
+            key={item}
             style={[
               styles.categoryButton,
-              selectedCategory === category &&
-                styles.categoryActive,
+              category === item && styles.categoryActive,
             ]}
-            onPress={() => setSelectedCategory(category)}
+            onPress={() => setCategory(item)}
           >
             <Text
               style={[
                 styles.categoryText,
-                selectedCategory === category &&
-                  styles.categoryTextActive,
+                category === item && styles.categoryTextActive,
               ]}
             >
-              {category}
+              {item}
             </Text>
           </Pressable>
         ))}
       </ScrollView>
 
-      {/* Produk bunga */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          Pilihan Spesial untukmu 💐
-        </Text>
+      <Text style={styles.sectionTitle}>Pilihan Buket</Text>
 
-        <View style={styles.productGrid}>
-          {filteredFlowers.length > 0 ? (
-            filteredFlowers.map((item) => (
-              <ProductCard key={item.id} item={item} />
-            ))
-          ) : (
-            <Text style={styles.emptyText}>
-              Bunga tidak ditemukan 🌷
-            </Text>
-          )}
-        </View>
+      <View style={styles.productList}>
+        {filteredFlowers.map((flower) => (
+          <View key={flower.id} style={styles.card}>
+            <Pressable
+              onPress={() =>
+                router.push(`/product/${flower.id}`)
+              }
+            >
+              <Image
+                source={{ uri: flower.image }}
+                style={styles.productImage}
+              />
+              <View style={styles.productInfo}>
+                <Text style={styles.productName}>{flower.name}</Text>
+                <Text style={styles.productCategory}>
+                  {flower.category}
+                </Text>
+                <Text style={styles.price}>
+                  {formatRupiah(flower.price)}
+                </Text>
+              </View>
+            </Pressable>
+
+            <View style={styles.cardButtons}>
+              <Pressable
+                style={styles.favoriteButton}
+                onPress={() => toggleFavorite(flower.id)}
+              >
+                <Text style={styles.favoriteText}>
+                  {favorites.includes(flower.id) ? '♥' : '♡'}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.detailButton}
+                onPress={() =>
+                  router.push(`/product/${flower.id}`)
+                }
+              >
+                <Text style={styles.detailButtonText}>
+                  Lihat Detail
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        ))}
       </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text
-          style={{
-            color: '#D96F8C',
-            fontSize: 14,
-            fontWeight: 'bold',
-          }}
-        >
-          Made with love by Bloomify ♡
+      {filteredFlowers.length === 0 && (
+        <Text style={styles.emptyText}>
+          Buket tidak ditemukan. Coba kata kunci lain.
         </Text>
+      )}
 
-        <Text style={styles.subtitle}>
-          Every flower tells a story.
-        </Text>
-      </View>
+      <Text style={styles.footer}>
+        Bloomify — made with love 🌸
+      </Text>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9FC',
+    paddingHorizontal: 18,
+  },
+  header: {
+    paddingTop: 20,
+    paddingBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  logo: {
+    fontSize: 27,
+    fontWeight: 'bold',
+    color: '#A34E73',
+  },
+  subtitle: {
+    color: '#927583',
+    marginTop: 3,
+  },
+  topButton: {
+    backgroundColor: '#F9DFEA',
+    padding: 12,
+    borderRadius: 15,
+  },
+  topButtonText: {
+    color: '#914769',
+    fontWeight: 'bold',
+  },
+  hero: {
+    backgroundColor: '#F8DDE9',
+    borderRadius: 22,
+    padding: 22,
+    marginBottom: 18,
+  },
+  heroTitle: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#884260',
+  },
+  heroText: {
+    marginTop: 10,
+    color: '#815D6D',
+  },
+  search: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F0D5E1',
+    borderRadius: 14,
+    paddingHorizontal: 15,
+    paddingVertical: 13,
+    marginBottom: 14,
+    color: '#633D50',
+  },
+  quickLinks: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
+  quickButton: {
+    flex: 1,
+    backgroundColor: '#F5E7EE',
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  quickText: {
+    color: '#8C4765',
+    fontWeight: '600',
+  },
+  sectionTitle: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    color: '#87435F',
+    marginBottom: 12,
+  },
+  categoryList: {
+    marginBottom: 20,
+  },
+  categoryButton: {
+    backgroundColor: '#F5E7EE',
+    paddingHorizontal: 17,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  categoryActive: {
+    backgroundColor: '#B95F85',
+  },
+  categoryText: {
+    color: '#8D5870',
+  },
+  categoryTextActive: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  productList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 14,
+  },
+  card: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 17,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#F3E2EA',
+    paddingBottom: 10,
+  },
+  productImage: {
+    width: '100%',
+    height: 135,
+    backgroundColor: '#F6EAF0',
+  },
+  productInfo: {
+    paddingHorizontal: 10,
+    paddingTop: 10,
+  },
+  productName: {
+    color: '#603B4E',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  productCategory: {
+    color: '#A17F90',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  price: {
+    color: '#B4517B',
+    fontWeight: 'bold',
+    marginTop: 7,
+  },
+  cardButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    marginTop: 10,
+  },
+  favoriteButton: {
+    backgroundColor: '#F9E8F0',
+    borderRadius: 9,
+    padding: 8,
+  },
+  favoriteText: {
+    color: '#B4517B',
+    fontSize: 17,
+  },
+  detailButton: {
+    flex: 1,
+    backgroundColor: '#B95F85',
+    paddingVertical: 10,
+    borderRadius: 9,
+    alignItems: 'center',
+  },
+  detailButtonText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  emptyText: {
+    color: '#927583',
+    textAlign: 'center',
+    marginTop: 25,
+  },
+  footer: {
+    textAlign: 'center',
+    color: '#A17F90',
+    paddingVertical: 28,
+  },
+});

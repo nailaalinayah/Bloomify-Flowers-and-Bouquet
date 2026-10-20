@@ -1,18 +1,54 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { Stack } from 'expo-router';
+import { ShopProvider } from '../context/ShopContext';
 
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <ShopProvider>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: '#FFF0F5' },
+          headerTintColor: '#8B4565',
+          headerTitleStyle: { fontWeight: 'bold' },
+          contentStyle: { backgroundColor: '#FFF9FC' },
+        }}
+      >
+        <Stack.Screen
+          name="index"
+          options={{
+            title: 'Bloomify',
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="product/[id]"
+          options={{ title: 'Detail Produk' }}
+        />
+
+        <Stack.Screen
+          name="favorites"
+          options={{ title: 'Bunga Favorit' }}
+        />
+
+        <Stack.Screen
+          name="cart"
+          options={{ title: 'Keranjang' }}
+        />
+
+        <Stack.Screen
+          name="checkout"
+          options={{ title: 'Checkout' }}
+        />
+
+        <Stack.Screen
+          name="success"
+          options={{
+            title: 'Pesanan Berhasil',
+            headerBackVisible: false,
+          }}
+        />
+      </Stack>
+    </ShopProvider>
   );
 }

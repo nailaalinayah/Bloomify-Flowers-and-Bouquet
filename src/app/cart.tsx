@@ -1,20 +1,18 @@
-
-import React from 'react';
+import { router } from "expo-router";
 import {
-  View,
-  Text,
+  Alert,
   Image,
   Pressable,
   ScrollView,
   StyleSheet,
-  Alert,
-} from 'react-native';
-import { router } from 'expo-router';
-import { flowers, formatRupiah } from '../data/flowers';
-import { useShop } from '../context/ShopContext';
+  Text,
+  View,
+} from "react-native";
+import { useShop } from "../context/ShopContext";
+import { formatRupiah } from "../data/flowers";
 
 export default function CartScreen() {
-  const { cart, updateQuantity, removeFromCart } = useShop();
+  const { flowers, cart, updateQuantity, removeFromCart } = useShop();
 
   const cartItems = cart
     .map((item) => ({
@@ -25,7 +23,7 @@ export default function CartScreen() {
 
   const total = cartItems.reduce(
     (sum, item) => sum + item.flower!.price * item.quantity,
-    0
+    0,
   );
 
   return (
@@ -34,14 +32,9 @@ export default function CartScreen() {
 
       {cartItems.length === 0 ? (
         <View>
-          <Text style={styles.empty}>
-            Keranjangmu masih kosong.
-          </Text>
+          <Text style={styles.empty}>Keranjangmu masih kosong.</Text>
 
-          <Pressable
-            style={styles.button}
-            onPress={() => router.replace('/')}
-          >
+          <Pressable style={styles.button} onPress={() => router.replace("/")}>
             <Text style={styles.buttonText}>Cari Buket</Text>
           </Pressable>
         </View>
@@ -55,9 +48,7 @@ export default function CartScreen() {
               />
 
               <View style={styles.info}>
-                <Text style={styles.name}>
-                  {item.flower!.name}
-                </Text>
+                <Text style={styles.name}>{item.flower!.name}</Text>
 
                 <Text style={styles.price}>
                   {formatRupiah(item.flower!.price)}
@@ -67,26 +58,18 @@ export default function CartScreen() {
                   <Pressable
                     style={styles.quantityButton}
                     onPress={() =>
-                      updateQuantity(
-                        item.flowerId,
-                        item.quantity - 1
-                      )
+                      updateQuantity(item.flowerId, item.quantity - 1)
                     }
                   >
                     <Text style={styles.quantityText}>−</Text>
                   </Pressable>
 
-                  <Text style={styles.quantity}>
-                    {item.quantity}
-                  </Text>
+                  <Text style={styles.quantity}>{item.quantity}</Text>
 
                   <Pressable
                     style={styles.quantityButton}
                     onPress={() =>
-                      updateQuantity(
-                        item.flowerId,
-                        item.quantity + 1
-                      )
+                      updateQuantity(item.flowerId, item.quantity + 1)
                     }
                   >
                     <Text style={styles.quantityText}>+</Text>
@@ -97,16 +80,16 @@ export default function CartScreen() {
                   style={styles.removeButton}
                   onPress={() =>
                     Alert.alert(
-                      'Hapus item',
+                      "Hapus item",
                       `Hapus ${item.flower!.name} dari keranjang?`,
                       [
-                        { text: 'Batal', style: 'cancel' },
+                        { text: "Batal", style: "cancel" },
                         {
-                          text: 'Hapus',
-                          style: 'destructive',
+                          text: "Hapus",
+                          style: "destructive",
                           onPress: () => removeFromCart(item.flowerId),
                         },
-                      ]
+                      ],
                     )
                   }
                 >
@@ -118,14 +101,12 @@ export default function CartScreen() {
 
           <View style={styles.totalBox}>
             <Text style={styles.totalLabel}>Total belanja</Text>
-            <Text style={styles.totalPrice}>
-              {formatRupiah(total)}
-            </Text>
+            <Text style={styles.totalPrice}>{formatRupiah(total)}</Text>
           </View>
 
           <Pressable
             style={styles.button}
-            onPress={() => router.push('/checkout')}
+            onPress={() => router.push("/checkout")}
           >
             <Text style={styles.buttonText}>Lanjut Checkout</Text>
           </Pressable>
@@ -139,102 +120,102 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 18,
-    backgroundColor: '#FFF9FC',
+    backgroundColor: "#FFF9FC",
   },
   heading: {
     fontSize: 23,
-    fontWeight: 'bold',
-    color: '#87435F',
+    fontWeight: "bold",
+    color: "#87435F",
     marginBottom: 18,
   },
   empty: {
-    color: '#927583',
+    color: "#927583",
     marginVertical: 15,
   },
   card: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
     borderRadius: 15,
     padding: 10,
     marginBottom: 13,
     borderWidth: 1,
-    borderColor: '#F3E2EA',
+    borderColor: "#F3E2EA",
   },
   image: {
     width: 105,
     height: 125,
     borderRadius: 12,
-    backgroundColor: '#F6EAF0',
+    backgroundColor: "#F6EAF0",
   },
   info: {
     flex: 1,
     paddingLeft: 12,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   name: {
-    fontWeight: 'bold',
-    color: '#603B4E',
+    fontWeight: "bold",
+    color: "#603B4E",
     fontSize: 14,
   },
   price: {
-    color: '#B4517B',
-    fontWeight: 'bold',
+    color: "#B4517B",
+    fontWeight: "bold",
     marginVertical: 7,
   },
   quantityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 13,
   },
   quantityButton: {
-    backgroundColor: '#F3DCE7',
+    backgroundColor: "#F3DCE7",
     borderRadius: 8,
     width: 30,
     height: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   quantityText: {
-    color: '#914769',
+    color: "#914769",
     fontSize: 20,
   },
   quantity: {
-    color: '#82415E',
-    fontWeight: 'bold',
+    color: "#82415E",
+    fontWeight: "bold",
   },
   removeButton: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     paddingTop: 8,
   },
   removeText: {
-    color: '#B4517B',
+    color: "#B4517B",
     fontSize: 12,
   },
   totalBox: {
-    backgroundColor: '#F8E5ED',
+    backgroundColor: "#F8E5ED",
     borderRadius: 14,
     padding: 16,
     marginTop: 8,
     marginBottom: 15,
   },
   totalLabel: {
-    color: '#82415E',
+    color: "#82415E",
   },
   totalPrice: {
-    color: '#A34E73',
-    fontWeight: 'bold',
+    color: "#A34E73",
+    fontWeight: "bold",
     fontSize: 22,
     marginTop: 5,
   },
   button: {
-    backgroundColor: '#B95F85',
+    backgroundColor: "#B95F85",
     padding: 15,
     borderRadius: 13,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 25,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
 });

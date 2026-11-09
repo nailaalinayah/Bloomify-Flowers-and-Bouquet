@@ -1,17 +1,19 @@
-
-import React, { useEffect, useState } from 'react';
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  Image,
-  ScrollView,
-  Pressable,
-  StyleSheet,
+  ActivityIndicator,
   Alert,
-} from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { flowers, formatRupiah } from '../../data/flowers';
-import { useShop } from '../../context/ShopContext';
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useShop } from "../../context/ShopContext";
+import { formatRupiah } from "../../data/flowers";
+import { getFlowerById } from "../../services/flowerService";
+import type { Flower } from "../../types/flower";
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,26 +22,42 @@ export default function ProductDetailScreen() {
 
   const { favorites, toggleFavorite, addToCart } = useShop();
 
-  const [selectedFlowerId, setSelectedFlowerId] = useState<number | null>(
-    null
-  );
+  // State untuk data dari API
+  const [flower, setFlower] = useState<Flower | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // Ambil satu bunga dari API memakai async/await
   useEffect(() => {
-    const parsedId = Number(id);
-    const found = flowers.find((item) => item.id === parsedId);
+    const loadFlower = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const data = await getFlowerById(Number(id));
+        setFlower(data);
+        setQuantity(1);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setSelectedFlowerId(found ? found.id : null);
-    setQuantity(1);
+    loadFlower();
   }, [id]);
 
-  const flower = flowers.find(
-    (item) => item.id === selectedFlowerId
-  );
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#B95F85" />
+      </View>
+    );
+  }
 
   if (!flower) {
     return (
       <View style={styles.center}>
-        <Text style={styles.title}>Produk tidak ditemukan</Text>
+        <Text style={styles.title}>{error || "Produk tidak ditemukan"}</Text>
         <Pressable style={styles.button} onPress={() => router.back()}>
           <Text style={styles.buttonText}>Kembali</Text>
         </Pressable>
@@ -51,7 +69,7 @@ export default function ProductDetailScreen() {
 
   const handleAddToCart = () => {
     addToCart(flower.id, quantity);
-    Alert.alert('Berhasil', 'Buket sudah ditambahkan ke keranjang.');
+    Alert.alert("Berhasil", "Buket sudah ditambahkan ke keranjang.");
   };
 
   return (
@@ -97,20 +115,17 @@ export default function ProductDetailScreen() {
           onPress={() => toggleFavorite(flower.id)}
         >
           <Text style={styles.favoriteText}>
-            {isFavorite ? '♥ Hapus dari Favorit' : '♡ Tambah ke Favorit'}
+            {isFavorite ? "♥ Hapus dari Favorit" : "♡ Tambah ke Favorit"}
           </Text>
         </Pressable>
 
-        <Pressable
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backText}>Kembali ke halaman sebelumnya</Text>
         </Pressable>
 
         <Pressable
           style={styles.cartButton}
-          onPress={() => router.push('/cart')}
+          onPress={() => router.push("/cart")}
         >
           <Text style={styles.buttonText}>Lihat Keranjang</Text>
         </Pressable>
@@ -122,111 +137,111 @@ export default function ProductDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF9FC',
+    backgroundColor: "#FFF9FC",
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 300,
-    backgroundColor: '#F6EAF0',
+    backgroundColor: "#F6EAF0",
   },
   content: {
     padding: 20,
   },
   category: {
-    color: '#A45B7C',
+    color: "#A45B7C",
     marginBottom: 7,
   },
   title: {
     fontSize: 25,
-    fontWeight: 'bold',
-    color: '#82415E',
+    fontWeight: "bold",
+    color: "#82415E",
   },
   price: {
     fontSize: 20,
-    color: '#B4517B',
-    fontWeight: 'bold',
+    color: "#B4517B",
+    fontWeight: "bold",
     marginTop: 10,
   },
   description: {
-    color: '#806879',
+    color: "#806879",
     lineHeight: 23,
     marginTop: 14,
   },
   label: {
-    color: '#82415E',
-    fontWeight: 'bold',
+    color: "#82415E",
+    fontWeight: "bold",
     marginTop: 25,
   },
   quantityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 20,
     marginTop: 12,
   },
   quantityButton: {
-    backgroundColor: '#F3DCE7',
+    backgroundColor: "#F3DCE7",
     width: 42,
     height: 42,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   quantityText: {
     fontSize: 24,
-    color: '#914769',
+    color: "#914769",
   },
   quantityNumber: {
     fontSize: 20,
-    color: '#82415E',
-    fontWeight: 'bold',
+    color: "#82415E",
+    fontWeight: "bold",
   },
   total: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#82415E',
+    fontWeight: "bold",
+    color: "#82415E",
     marginTop: 20,
     marginBottom: 15,
   },
   button: {
-    backgroundColor: '#B95F85',
+    backgroundColor: "#B95F85",
     borderRadius: 13,
     padding: 15,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 5,
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
   favoriteButton: {
-    backgroundColor: '#F5E7EE',
+    backgroundColor: "#F5E7EE",
     borderRadius: 13,
     padding: 14,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 10,
   },
   favoriteText: {
-    color: '#984B6E',
-    fontWeight: 'bold',
+    color: "#984B6E",
+    fontWeight: "bold",
   },
   backButton: {
     padding: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   backText: {
-    color: '#914769',
+    color: "#914769",
   },
   cartButton: {
-    backgroundColor: '#8D4968',
+    backgroundColor: "#8D4968",
     borderRadius: 13,
     padding: 15,
-    alignItems: 'center',
+    alignItems: "center",
   },
   center: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
-    backgroundColor: '#FFF9FC',
+    backgroundColor: "#FFF9FC",
   },
 });

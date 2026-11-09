@@ -1,40 +1,54 @@
-
-import React, { useEffect, useState } from 'react';
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
-  Image,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
-import { router } from 'expo-router';
-import { flowers, formatRupiah } from '../data/flowers';
-import { useShop } from '../context/ShopContext';
+  View,
+} from "react-native";
+import { useShop } from "../context/ShopContext";
+import { formatRupiah } from "../data/flowers";
+import { getFlowers } from "../services/flowerService";
+import type { Flower } from "../types/flower";
 
-const categories = ['Semua', 'Mawar', 'Sunflower', 'Pink', 'Putih'];
+const categories = ["Semua", "Mawar", "Sunflower", "Pink", "Putih"];
 
 export default function HomeScreen() {
   //useState input pencarian dan kategori aktif.
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('Semua');
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("Semua");
+
+  // State untuk data dari API
+  const [flowers, setFlowers] = useState<Flower[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const { favorites, toggleFavorite, cart } = useShop();
 
   //useEffect berjalan saat nilai pencarian/kategori berubah.
   useEffect(() => {
-    console.log('Pencarian:', search);
-    console.log('Kategori aktif:', category);
+    console.log("Pencarian:", search);
+    console.log("Kategori aktif:", category);
   }, [search, category]);
+
+  // Ambil data dari API satu kali saat layar pertama dibuka
+  useEffect(() => {
+    getFlowers()
+      .then((data) => setFlowers(data))
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filteredFlowers = flowers.filter((flower) => {
     const matchSearch = flower.name
       .toLowerCase()
       .includes(search.toLowerCase());
 
-    const matchCategory =
-      category === 'Semua' || flower.category === category;
+    const matchCategory = category === "Semua" || flower.category === category;
 
     return matchSearch && matchCategory;
   });
@@ -49,7 +63,7 @@ export default function HomeScreen() {
 
         <Pressable
           style={styles.topButton}
-          onPress={() => router.push('/cart')}
+          onPress={() => router.push("/cart")}
         >
           <Text style={styles.topButtonText}>🛒 {cart.length}</Text>
         </Pressable>
@@ -74,16 +88,14 @@ export default function HomeScreen() {
       <View style={styles.quickLinks}>
         <Pressable
           style={styles.quickButton}
-          onPress={() => router.push('/favorites')}
+          onPress={() => router.push("/favorites")}
         >
-          <Text style={styles.quickText}>
-            ♡ Favorit ({favorites.length})
-          </Text>
+          <Text style={styles.quickText}>♡ Favorit ({favorites.length})</Text>
         </Pressable>
 
         <Pressable
           style={styles.quickButton}
-          onPress={() => router.push('/cart')}
+          onPress={() => router.push("/cart")}
         >
           <Text style={styles.quickText}>🛒 Keranjang</Text>
         </Pressable>
@@ -119,26 +131,28 @@ export default function HomeScreen() {
 
       <Text style={styles.sectionTitle}>Pilihan Buket</Text>
 
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color="#B95F85"
+          style={{ marginTop: 25 }}
+        />
+      )}
+
+      {error !== "" && <Text style={styles.emptyText}>{error}</Text>}
+
       <View style={styles.productList}>
         {filteredFlowers.map((flower) => (
           <View key={flower.id} style={styles.card}>
-            <Pressable
-              onPress={() =>
-                router.push(`/product/${flower.id}`)
-              }
-            >
+            <Pressable onPress={() => router.push(`/product/${flower.id}`)}>
               <Image
                 source={{ uri: flower.image }}
                 style={styles.productImage}
               />
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{flower.name}</Text>
-                <Text style={styles.productCategory}>
-                  {flower.category}
-                </Text>
-                <Text style={styles.price}>
-                  {formatRupiah(flower.price)}
-                </Text>
+                <Text style={styles.productCategory}>{flower.category}</Text>
+                <Text style={styles.price}>{formatRupiah(flower.price)}</Text>
               </View>
             </Pressable>
 
@@ -148,34 +162,28 @@ export default function HomeScreen() {
                 onPress={() => toggleFavorite(flower.id)}
               >
                 <Text style={styles.favoriteText}>
-                  {favorites.includes(flower.id) ? '♥' : '♡'}
+                  {favorites.includes(flower.id) ? "♥" : "♡"}
                 </Text>
               </Pressable>
 
               <Pressable
                 style={styles.detailButton}
-                onPress={() =>
-                  router.push(`/product/${flower.id}`)
-                }
+                onPress={() => router.push(`/product/${flower.id}`)}
               >
-                <Text style={styles.detailButtonText}>
-                  Lihat Detail
-                </Text>
+                <Text style={styles.detailButtonText}>Lihat Detail</Text>
               </Pressable>
             </View>
           </View>
         ))}
       </View>
 
-      {filteredFlowers.length === 0 && (
+      {!loading && !error && filteredFlowers.length === 0 && (
         <Text style={styles.emptyText}>
           Buket tidak ditemukan. Coba kata kunci lain.
         </Text>
       )}
 
-      <Text style={styles.footer}>
-        Bloomify — made with love 🌸
-      </Text>
+      <Text style={styles.footer}>Bloomify — made with love 🌸</Text>
     </ScrollView>
   );
 }
@@ -183,176 +191,176 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF9FC',
+    backgroundColor: "#FFF9FC",
     paddingHorizontal: 18,
   },
   header: {
     paddingTop: 20,
     paddingBottom: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   logo: {
     fontSize: 27,
-    fontWeight: 'bold',
-    color: '#A34E73',
+    fontWeight: "bold",
+    color: "#A34E73",
   },
   subtitle: {
-    color: '#927583',
+    color: "#927583",
     marginTop: 3,
   },
   topButton: {
-    backgroundColor: '#F9DFEA',
+    backgroundColor: "#F9DFEA",
     padding: 12,
     borderRadius: 15,
   },
   topButtonText: {
-    color: '#914769',
-    fontWeight: 'bold',
+    color: "#914769",
+    fontWeight: "bold",
   },
   hero: {
-    backgroundColor: '#F8DDE9',
+    backgroundColor: "#F8DDE9",
     borderRadius: 22,
     padding: 22,
     marginBottom: 18,
   },
   heroTitle: {
     fontSize: 23,
-    fontWeight: 'bold',
-    color: '#884260',
+    fontWeight: "bold",
+    color: "#884260",
   },
   heroText: {
     marginTop: 10,
-    color: '#815D6D',
+    color: "#815D6D",
   },
   search: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: '#F0D5E1',
+    borderColor: "#F0D5E1",
     borderRadius: 14,
     paddingHorizontal: 15,
     paddingVertical: 13,
     marginBottom: 14,
-    color: '#633D50',
+    color: "#633D50",
   },
   quickLinks: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
     marginBottom: 20,
   },
   quickButton: {
     flex: 1,
-    backgroundColor: '#F5E7EE',
+    backgroundColor: "#F5E7EE",
     padding: 12,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   quickText: {
-    color: '#8C4765',
-    fontWeight: '600',
+    color: "#8C4765",
+    fontWeight: "600",
   },
   sectionTitle: {
     fontSize: 19,
-    fontWeight: 'bold',
-    color: '#87435F',
+    fontWeight: "bold",
+    color: "#87435F",
     marginBottom: 12,
   },
   categoryList: {
     marginBottom: 20,
   },
   categoryButton: {
-    backgroundColor: '#F5E7EE',
+    backgroundColor: "#F5E7EE",
     paddingHorizontal: 17,
     paddingVertical: 10,
     borderRadius: 20,
     marginRight: 8,
   },
   categoryActive: {
-    backgroundColor: '#B95F85',
+    backgroundColor: "#B95F85",
   },
   categoryText: {
-    color: '#8D5870',
+    color: "#8D5870",
   },
   categoryTextActive: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
   productList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     rowGap: 14,
   },
   card: {
-    width: '48%',
-    backgroundColor: '#FFFFFF',
+    width: "48%",
+    backgroundColor: "#FFFFFF",
     borderRadius: 17,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
-    borderColor: '#F3E2EA',
+    borderColor: "#F3E2EA",
     paddingBottom: 10,
   },
   productImage: {
-    width: '100%',
+    width: "100%",
     height: 135,
-    backgroundColor: '#F6EAF0',
+    backgroundColor: "#F6EAF0",
   },
   productInfo: {
     paddingHorizontal: 10,
     paddingTop: 10,
   },
   productName: {
-    color: '#603B4E',
-    fontWeight: 'bold',
+    color: "#603B4E",
+    fontWeight: "bold",
     fontSize: 14,
   },
   productCategory: {
-    color: '#A17F90',
+    color: "#A17F90",
     fontSize: 12,
     marginTop: 4,
   },
   price: {
-    color: '#B4517B',
-    fontWeight: 'bold',
+    color: "#B4517B",
+    fontWeight: "bold",
     marginTop: 7,
   },
   cardButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
     paddingHorizontal: 8,
     marginTop: 10,
   },
   favoriteButton: {
-    backgroundColor: '#F9E8F0',
+    backgroundColor: "#F9E8F0",
     borderRadius: 9,
     padding: 8,
   },
   favoriteText: {
-    color: '#B4517B',
+    color: "#B4517B",
     fontSize: 17,
   },
   detailButton: {
     flex: 1,
-    backgroundColor: '#B95F85',
+    backgroundColor: "#B95F85",
     paddingVertical: 10,
     borderRadius: 9,
-    alignItems: 'center',
+    alignItems: "center",
   },
   detailButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   emptyText: {
-    color: '#927583',
-    textAlign: 'center',
+    color: "#927583",
+    textAlign: "center",
     marginTop: 25,
   },
   footer: {
-    textAlign: 'center',
-    color: '#A17F90',
+    textAlign: "center",
+    color: "#A17F90",
     paddingVertical: 28,
   },
 });

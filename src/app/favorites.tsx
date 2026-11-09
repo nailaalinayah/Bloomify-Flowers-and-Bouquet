@@ -1,22 +1,20 @@
-
-import React from 'react';
+import { router } from "expo-router";
 import {
-  View,
-  Text,
   Image,
   Pressable,
   ScrollView,
   StyleSheet,
-} from 'react-native';
-import { router } from 'expo-router';
-import { flowers, formatRupiah } from '../data/flowers';
-import { useShop } from '../context/ShopContext';
+  Text,
+  View,
+} from "react-native";
+import { useShop } from "../context/ShopContext";
+import { formatRupiah } from "../data/flowers";
 
 export default function FavoritesScreen() {
-  const { favorites, toggleFavorite } = useShop();
+  const { flowers, favorites, toggleFavorite } = useShop();
 
   const favoriteFlowers = flowers.filter((flower) =>
-    favorites.includes(flower.id)
+    favorites.includes(flower.id),
   );
 
   return (
@@ -30,22 +28,15 @@ export default function FavoritesScreen() {
       ) : (
         favoriteFlowers.map((flower) => (
           <View style={styles.card} key={flower.id}>
-            <Image
-              source={{ uri: flower.image }}
-              style={styles.image}
-            />
+            <Image source={{ uri: flower.image }} style={styles.image} />
 
             <View style={styles.info}>
               <Text style={styles.name}>{flower.name}</Text>
-              <Text style={styles.price}>
-                {formatRupiah(flower.price)}
-              </Text>
+              <Text style={styles.price}>{formatRupiah(flower.price)}</Text>
 
               <Pressable
                 style={styles.button}
-                onPress={() =>
-                  router.push(`/product/${flower.id}`)
-                }
+                onPress={() => router.push(`/product/${flower.id}`)}
               >
                 <Text style={styles.buttonText}>Lihat Detail</Text>
               </Pressable>
@@ -68,65 +59,65 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 18,
-    backgroundColor: '#FFF9FC',
+    backgroundColor: "#FFF9FC",
   },
   heading: {
     fontSize: 23,
-    fontWeight: 'bold',
-    color: '#87435F',
+    fontWeight: "bold",
+    color: "#87435F",
     marginBottom: 18,
   },
   empty: {
-    color: '#927583',
+    color: "#927583",
     lineHeight: 23,
     marginTop: 15,
   },
   card: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
     borderRadius: 15,
     marginBottom: 14,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#F3E2EA',
+    borderColor: "#F3E2EA",
   },
   image: {
     width: 110,
     height: 130,
     borderRadius: 12,
-    backgroundColor: '#F6EAF0',
+    backgroundColor: "#F6EAF0",
   },
   info: {
     flex: 1,
     paddingLeft: 12,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   name: {
-    color: '#603B4E',
-    fontWeight: 'bold',
+    color: "#603B4E",
+    fontWeight: "bold",
     fontSize: 15,
   },
   price: {
-    color: '#B4517B',
-    fontWeight: 'bold',
+    color: "#B4517B",
+    fontWeight: "bold",
     marginVertical: 8,
   },
   button: {
-    backgroundColor: '#B95F85',
+    backgroundColor: "#B95F85",
     borderRadius: 9,
     padding: 9,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
   remove: {
     padding: 7,
-    alignItems: 'center',
+    alignItems: "center",
   },
   removeText: {
-    color: '#984B6E',
+    color: "#984B6E",
     fontSize: 12,
   },
 });

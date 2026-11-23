@@ -28,11 +28,13 @@ export default function HomeScreen() {
   const [flowers, setFlowers] = useState<Flower[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
 
   const { favorites, toggleFavorite, cart } = useShop();
   const { signOut } = useAuth();
 
   const handleSignOut = async () => {
+    setSigningOut(true);
     try {
       await signOut();
     } catch (signOutError) {
@@ -42,6 +44,8 @@ export default function HomeScreen() {
           ? signOutError.message
           : "Silakan coba lagi.",
       );
+    } finally {
+      setSigningOut(false);
     }
   };
 
@@ -84,8 +88,16 @@ export default function HomeScreen() {
           >
             <Text style={styles.topButtonText}>🛒 {cart.length}</Text>
           </Pressable>
-          <Pressable style={styles.signOutButton} onPress={handleSignOut}>
-            <Text style={styles.signOutText}>Keluar</Text>
+          <Pressable
+            style={styles.signOutButton}
+            onPress={handleSignOut}
+            disabled={signingOut}
+          >
+            {signingOut ? (
+              <ActivityIndicator size="small" color="#984B6E" />
+            ) : (
+              <Text style={styles.signOutText}>Keluar</Text>
+            )}
           </Pressable>
         </View>
       </View>

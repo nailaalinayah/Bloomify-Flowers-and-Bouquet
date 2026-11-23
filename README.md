@@ -16,6 +16,28 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
+## Supabase authentication
+
+The app uses Supabase email/password authentication. Copy `.env.example` to
+`.env.local`, then fill in the project URL and publishable (or legacy anon) key
+from the Supabase project settings:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-public-key
+```
+
+Restart Expo after changing environment variables. Do not put a Supabase
+`service_role` or secret key in this app. The publishable/anon key is intended
+for client apps; protect data with Row Level Security policies in Supabase.
+
+On iOS and Android, the persisted auth session is kept in Expo SecureStore.
+Web uses AsyncStorage, which is not encrypted by the browser. When email
+confirmation is enabled, confirm the account from the email and then sign in
+from the app.
+
+## Run on a device
+
 In the output, you'll find options to open the app in a
 
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)

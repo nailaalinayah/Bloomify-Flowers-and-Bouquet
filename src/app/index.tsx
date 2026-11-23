@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Alert,
   ActivityIndicator,
   Image,
   Pressable,
@@ -11,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useShop } from "../context/ShopContext";
+import { useAuth } from "../context/AuthContext";
 import { formatRupiah } from "../data/flowers";
 import { getFlowers } from "../services/flowerService";
 import type { Flower } from "../types/flower";
@@ -28,6 +30,20 @@ export default function HomeScreen() {
   const [error, setError] = useState("");
 
   const { favorites, toggleFavorite, cart } = useShop();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (signOutError) {
+      Alert.alert(
+        "Gagal keluar",
+        signOutError instanceof Error
+          ? signOutError.message
+          : "Silakan coba lagi.",
+      );
+    }
+  };
 
   //useEffect berjalan saat nilai pencarian/kategori berubah.
   useEffect(() => {
@@ -61,12 +77,17 @@ export default function HomeScreen() {
           <Text style={styles.subtitle}>Flowers for every moment</Text>
         </View>
 
-        <Pressable
-          style={styles.topButton}
-          onPress={() => router.push("/cart")}
-        >
-          <Text style={styles.topButtonText}>🛒 {cart.length}</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            style={styles.topButton}
+            onPress={() => router.push("/cart")}
+          >
+            <Text style={styles.topButtonText}>🛒 {cart.length}</Text>
+          </Pressable>
+          <Pressable style={styles.signOutButton} onPress={handleSignOut}>
+            <Text style={styles.signOutText}>Keluar</Text>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.hero}>
@@ -218,6 +239,19 @@ const styles = StyleSheet.create({
   topButtonText: {
     color: "#914769",
     fontWeight: "bold",
+  },
+  headerActions: {
+    alignItems: "flex-end",
+    gap: 8,
+  },
+  signOutButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  signOutText: {
+    color: "#984B6E",
+    fontSize: 12,
+    fontWeight: "600",
   },
   hero: {
     backgroundColor: "#F8DDE9",
